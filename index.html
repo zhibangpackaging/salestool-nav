@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SalesTool Navigation</title>
+  <style>
+    body{font-family:system-ui,Arial;margin:24px;max-width:900px}
+    h1{margin-bottom:6px}
+    .cat{margin-top:18px;font-weight:700}
+    ul{padding-left:18px}
+    li{margin:6px 0}
+    a{color:#0b57d0;text-decoration:none}
+    a:hover{text-decoration:underline}
+  </style>
+</head>
+<body>
+  <h1>SalesTool Navigation</h1>
+  <p>Managed by Sveltia CMS on GitHub + Cloudflare Pages.</p>
+
+  <div id="app">Loading...</div>
+
+  <script>
+    // 读取 links 数据（由 CMS 写入 /data/links/*.json）
+    async function loadLinks(){
+      const res = await fetch('/data/links/index.json');
+      return await res.json();
+    }
+    function render(links){
+      links.sort((a,b)=>(a.category||'').localeCompare(b.category||'')||a.order-b.order);
+      const byCat = {};
+      for (const l of links){
+        const c = l.category || 'Other';
+        (byCat[c] ||= []).push(l);
+      }
+      let html='';
+      for (const c of Object.keys(byCat)){
+        html += `<div class="cat">${c}</div><ul>`;
+        for (const l of byCat[c]){
+          html += `<li><a href="${l.url}" target="_blank" rel="noopener">${l.title}</a></li>`;
+        }
+        html += `</ul>`;
+      }
+      document.querySelector('#app').innerHTML = html || 'No links yet.';
+    }
+    loadLinks().then(render).catch(e=>{
+      document.querySelector('#app').innerHTML = 'Failed to load links.';
+      console.error(e);
+    });
+  </script>
+</body>
+</html>
